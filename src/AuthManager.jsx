@@ -1,26 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import App from "./App.jsx";
 import AuthenticationPage from "./components/AuthenticationPage.jsx";
+import {initKeycloak} from "./KeycloakService.js";
 
 const AuthManager = () => {
     // Toggle this state based on your authentication logic
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [authChecked, setAuthChecked] = useState(false);
+    const [authenticated, setAuthenticated] = useState(false);
 
-    // Example: Check authentication status on mount
     useEffect(() => {
-        // Replace with your actual authentication check
-        const checkAuth = () => {
-            // Example: Check localStorage, cookies, or make API call
-            const authToken = localStorage.getItem('authToken');
-            setIsAuthenticated(!!authToken);
-        };
-
-        checkAuth();
+        console.log(authenticated);
+        initKeycloak((auth) => {
+            setAuthenticated(auth);
+            setAuthChecked(true);
+        });
     }, []);
 
     return (
         <>
-            {isAuthenticated ? <App /> : <AuthenticationPage />}
+            {authenticated ? <App /> : <AuthenticationPage />}
         </>
     );
 };

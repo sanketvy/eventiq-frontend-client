@@ -14,8 +14,14 @@ import UsersPage from "./pages/UsersPage.jsx";
 import DevicesPage from "./pages/DevicesPage.jsx";
 import AnalyticsPage from "./pages/AnalyticsPage.jsx";
 import SettingsPage from "./pages/SettingsPage.jsx";
+import {logout} from "./KeycloakService.js";
 
+const currentUser = {
+    name: 'John Doe',
+    email: 'john@example.com',
+};
 const App = () => {
+    const [dropdownOpen, setDropdownOpen] = useState(false);
     const [activeTab, setActiveTab] = useState('overview');
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [realTimeEnabled, setRealTimeEnabled] = useState(true);
@@ -272,7 +278,8 @@ const App = () => {
                             </div>
                         </div>
 
-                        <div className="flex items-center space-x-4">
+                        <div className="flex items-center space-x-4 relative">
+                            {/* Search Input */}
                             <div className="relative">
                                 <Search className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
                                 <input
@@ -281,16 +288,40 @@ const App = () => {
                                     className="pl-10 pr-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-blue-500/50"
                                 />
                             </div>
+
+                            {/* Notification Button */}
                             <button className="p-2 hover:bg-slate-700/50 rounded-lg transition-colors relative">
                                 <Bell className="w-5 h-5 text-slate-400" />
                                 <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></div>
                             </button>
-                            <button
-                                className="p-2 hover:bg-slate-700/50 rounded-lg transition-colors"
-                            >
-                                <RefreshCcw className="w-5 h-5 text-slate-400" />
-                            </button>
+
+                            {/* User Dropdown */}
+                            <div className="relative">
+                                <button
+                                    onClick={() => setDropdownOpen(!dropdownOpen)}
+                                    className="flex items-center space-x-2 px-3 py-2 bg-slate-800/50 hover:bg-slate-700/50 text-white rounded-lg transition-colors"
+                                >
+                                    <span className="font-medium">{currentUser.name}</span>
+                                    <ChevronDown className="w-4 h-4 text-slate-400" />
+                                </button>
+
+                                {dropdownOpen && (
+                                    <div className="absolute right-0 mt-2 w-48 bg-slate-800 border border-slate-700 rounded-lg shadow-lg z-50">
+                                        <div className="px-4 py-3 border-b border-slate-700 text-sm text-slate-300">
+                                            <div>{currentUser.name}</div>
+                                            <div className="text-slate-400 text-xs">{currentUser.email}</div>
+                                        </div>
+                                        <button
+                                            onClick={logout}
+                                            className="w-full text-left px-4 py-2 text-sm hover:bg-slate-700 text-slate-300"
+                                        >
+                                            Logout
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
                         </div>
+
                     </div>
                 </header>
 
