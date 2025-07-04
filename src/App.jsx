@@ -14,12 +14,11 @@ import UsersPage from "./pages/UsersPage.jsx";
 import DevicesPage from "./pages/DevicesPage.jsx";
 import AnalyticsPage from "./pages/AnalyticsPage.jsx";
 import SettingsPage from "./pages/SettingsPage.jsx";
-import {logout} from "./KeycloakService.js";
+import {getToken, logout} from "./KeycloakService.js";
+import {IdentityService} from "./utils/RestPaths.js";
+import axios from 'axios';
 
-const currentUser = {
-    name: 'John Doe',
-    email: 'john@example.com',
-};
+
 const App = () => {
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const [activeTab, setActiveTab] = useState('overview');
@@ -29,7 +28,7 @@ const App = () => {
     const [selectedProject, setSelectedProject] = useState('project-1');
     const [projectDropdownOpen, setProjectDropdownOpen] = useState(false);
     const [liveFeedPaused, setLiveFeedPaused] = useState(false);
-
+    const [currentUser, setCurrentUser] = useState({});
     // Sample projects data
     const projects = [
         { id: 'project-1', name: 'E-commerce Website', color: 'from-blue-400 to-blue-600' },
@@ -39,57 +38,15 @@ const App = () => {
         { id: 'project-5', name: 'Blog Platform', color: 'from-pink-400 to-pink-600' }
     ];
 
-    // Live activity feed
-    const [activities, setActivities] = useState([
-        { id: 1, type: 'signup', user: 'John D.', time: '2 min ago', status: 'success' },
-        { id: 2, type: 'purchase', user: 'Sarah M.', time: '5 min ago', status: 'success' },
-        { id: 3, type: 'trial', user: 'Mike R.', time: '8 min ago', status: 'pending' },
-        { id: 4, type: 'signup', user: 'Emma L.', time: '12 min ago', status: 'success' },
-        { id: 5, type: 'upgrade', user: 'David K.', time: '15 min ago', status: 'success' }
-    ]);
-
-    const [metrics, setMetrics] = useState({
-        totalUsers: 12459,
-        conversionRate: 3.2,
-        revenue: 48392,
-        bounceRate: 45.6,
-        pageViews: 89432,
-        activeUsers: 1247
-    });
-
-    // Update real-time data
-    useEffect(() => {
-        if (!realTimeEnabled || liveFeedPaused) return;
-
-        const interval = setInterval(() => {
-            // Update metrics with small random changes
-            setMetrics(prev => ({
-                totalUsers: prev.totalUsers + Math.floor(Math.random() * 10),
-                conversionRate: +(prev.conversionRate + (Math.random() - 0.5) * 0.2).toFixed(1),
-                revenue: prev.revenue + Math.floor(Math.random() * 100),
-                bounceRate: +(prev.bounceRate + (Math.random() - 0.5) * 0.5).toFixed(1),
-                pageViews: prev.pageViews + Math.floor(Math.random() * 50),
-                activeUsers: prev.activeUsers + Math.floor(Math.random() * 20) - 10
-            }));
-
-            // Add new activity
-            if (Math.random() > 0.7) {
-                const newActivity = {
-                    id: Date.now(),
-                    type: ['signup', 'purchase', 'trial', 'upgrade'][Math.floor(Math.random() * 4)],
-                    user: ['Alex J.', 'Maria S.', 'Tom B.', 'Lisa P.', 'Ryan W.'][Math.floor(Math.random() * 5)],
-                    time: 'Just now',
-                    status: Math.random() > 0.2 ? 'success' : 'pending'
-                };
-                setActivities(prev => [newActivity, ...prev.slice(0, 9)]);
-            }
-        }, 3000);
-
-        return () => clearInterval(interval);
-    }, [realTimeEnabled, liveFeedPaused]);
-
     // Close dropdown when clicking outside
     useEffect(() => {
+        const token = getToken();
+        axios.get(IdentityService.currentUser, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+        }).then(r => setCurrentUser(r.data));
+
         const handleClickOutside = (event) => {
             if (!event.target.closest('.project-dropdown')) {
                 setProjectDropdownOpen(false);
@@ -301,14 +258,14 @@ const App = () => {
                                     onClick={() => setDropdownOpen(!dropdownOpen)}
                                     className="flex items-center space-x-2 px-3 py-2 bg-slate-800/50 hover:bg-slate-700/50 text-white rounded-lg transition-colors"
                                 >
-                                    <span className="font-medium">{currentUser.name}</span>
+                                    <span className="font-medium">{currentUser.firstName} {currentUser.lastName}</span>
                                     <ChevronDown className="w-4 h-4 text-slate-400" />
                                 </button>
 
                                 {dropdownOpen && (
                                     <div className="absolute right-0 mt-2 w-48 bg-slate-800 border border-slate-700 rounded-lg shadow-lg z-50">
                                         <div className="px-4 py-3 border-b border-slate-700 text-sm text-slate-300">
-                                            <div>{currentUser.name}</div>
+                                            <div>{currentUser.firstName} {currentUser.lastName}</div>
                                             <div className="text-slate-400 text-xs">{currentUser.email}</div>
                                         </div>
                                         <button
