@@ -1,50 +1,22 @@
-import React, { useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import { User, Plus, CreditCard, Bell, Settings, Mail, Shield, Trash2, Edit3, Save, X, Copy, Eye, EyeOff, RotateCw, Power } from 'lucide-react';
+import axios from "axios";
+import {IdentityService} from "../utils/RestPaths.js";
+import {getToken} from "../KeycloakService.js";
 
-const SettingsPage = () => {
+const SettingsPage = ({updateProjects}) => {
     const [activeTab, setActiveTab] = useState('profile');
     const [isEditing, setIsEditing] = useState(false);
     const [showCreateProject, setShowCreateProject] = useState(false);
     const [newProjectName, setNewProjectName] = useState('');
     const [visibleKeys, setVisibleKeys] = useState({});
     const [showModal, setShowModal] = useState(false);
+    const [deleteConfirmation, setDeleteConfirmation]= useState({});
 
     // Mock user data - in real app this would come from props/context
-    const [userProfile, setUserProfile] = useState({
-        firstName: 'John',
-        lastName: 'Doe',
-        email: 'john.doe@example.com',
-        phone: '+1 (555) 123-4567',
-        company: 'Tech Corp',
-        role: 'Product Manager'
-    });
+    const [userProfile, setUserProfile] = useState({});
 
-    const [projects, setProjects] = useState([
-        {
-            id: 1,
-            name: 'Website Analytics',
-            created: '2024-01-15',
-            status: 'Active',
-            projectId: 'proj_1a2b3c4d5e6f7g8h9i0j',
-            keyEnabled: true
-        },
-        {
-            id: 2,
-            name: 'Mobile App Tracking',
-            created: '2024-02-20',
-            status: 'Active',
-            projectId: 'proj_2k3l4m5n6o7p8q9r0s1t',
-            keyEnabled: true
-        },
-        {
-            id: 3,
-            name: 'Email Campaign',
-            created: '2024-03-10',
-            status: 'Paused',
-            projectId: 'proj_3u4v5w6x7y8z9a0b1c2d',
-            keyEnabled: false
-        }
-    ]);
+    const [projects, setProjects] = useState([]);
 
     const [appSettings, setAppSettings] = useState({
         emailNotifications: true,
@@ -69,20 +41,52 @@ const SettingsPage = () => {
 
     const handleSaveProfile = () => {
         setIsEditing(false);
-        // Save profile logic here
+        console.log(userProfile);
+        axios.put(IdentityService.user, userProfile, {
+            headers: {
+                Authorization: `Bearer ${getToken()}`
+             }
+        }).then(r => refreshUserProfile());
     };
+
+    useEffect(() => {
+        refreshProjects();
+        refreshUserProfile();
+    }, []);
+
+    const refreshUserProfile = ()=> {
+        axios.get(IdentityService.user, {
+            headers: {
+                Authorization:  `Bearer ${getToken()}`
+            }
+        }).then(res => {
+            setUserProfile(res.data);
+        });
+    }
+
+    const refreshProjects = () => {
+        axios.get(IdentityService.projects, {
+            headers: {
+                Authorization:  `Bearer ${getToken()}`
+            }
+        }).then(res => {
+            setProjects(res.data);
+            updateProjects(res.data);
+        });
+    }
 
     const handleCreateProject = () => {
         if (newProjectName.trim()) {
             const newProject = {
-                id: Date.now(),
-                name: newProjectName,
-                created: new Date().toISOString().split('T')[0],
-                status: 'Active',
-                projectId: `proj_${Math.random().toString(36).substring(2, 22)}`,
-                keyEnabled: true
+                projectName: newProjectName,
             };
-            setProjects([...projects, newProject]);
+            axios.post(IdentityService.projects, newProject, {
+                headers:{
+                    Authorization: `Bearer ${getToken()}`
+                }
+            }).then(res => {
+                refreshProjects();
+            })
             setNewProjectName('');
             setShowCreateProject(false);
             setShowModal(false);
@@ -90,13 +94,19 @@ const SettingsPage = () => {
     };
 
     const handleDeleteProject = (projectId) => {
-        setProjects(projects.filter(p => p.id !== projectId));
+        axios.delete(IdentityService.projects + "/" + projectId, {
+            headers: {
+                Authorization: `Bearer ${getToken()}`
+            }
+        }).then(res => refreshProjects());
     };
 
-    const handleToggleKey = (projectId) => {
-        setProjects(projects.map(p =>
-            p.id === projectId ? { ...p, keyEnabled: !p.keyEnabled } : p
-        ));
+    const handleToggleKey = (projectId, status) => {
+        axios.get(IdentityService.projects + "/status/" + projectId, {
+            headers: {
+                Authorization: `Bearer ${getToken()}`
+            }
+        }).then(res => refreshProjects());
     };
 
     const handleRenewKey = (projectId) => {
@@ -210,16 +220,7 @@ const SettingsPage = () => {
 
                     <div>
                         <label className="block text-sm font-medium text-gray-300 mb-2">Email</label>
-                        {isEditing ? (
-                            <input
-                                type="email"
-                                value={userProfile.email}
-                                onChange={(e) => setUserProfile({...userProfile, email: e.target.value})}
-                                className="w-full px-4 py-2 bg-gray-700 text-white border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            />
-                        ) : (
                             <p className="text-gray-100 py-2">{userProfile.email}</p>
-                        )}
                     </div>
 
                     <div>
@@ -227,12 +228,12 @@ const SettingsPage = () => {
                         {isEditing ? (
                             <input
                                 type="tel"
-                                value={userProfile.phone}
-                                onChange={(e) => setUserProfile({...userProfile, phone: e.target.value})}
+                                value={userProfile.phoneNo}
+                                onChange={(e) => setUserProfile({...userProfile, phoneNo: e.target.value})}
                                 className="w-full px-4 py-2 bg-gray-700 text-white border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             />
                         ) : (
-                            <p className="text-gray-100 py-2">{userProfile.phone}</p>
+                            <p className="text-gray-100 py-2">{userProfile.phoneNo}</p>
                         )}
                     </div>
 
@@ -287,19 +288,21 @@ const SettingsPage = () => {
                         <div className="space-y-4">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <h3 className="text-lg font-semibold text-white">{project.name}</h3>
-                                    <p className="text-sm text-gray-400">Created: {project.created}</p>
+                                    <h3 className="text-lg font-semibold text-white">{project.projectName}</h3>
+                                    <p className="text-sm text-gray-400">
+                                        Created: {new Date(project.createdAt).toLocaleString()}
+                                    </p>
                                 </div>
                                 <div className="flex items-center gap-4">
                                     <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                                        project.status === 'Active'
+                                        project.isActive === true
                                             ? 'bg-green-900/50 text-green-300 border border-green-700'
                                             : 'bg-yellow-900/50 text-yellow-300 border border-yellow-700'
                                     }`}>
-                                        {project.status}
+                                        {project.isActive ? "Active" : "Disabled"}
                                     </span>
                                     <button
-                                        onClick={() => handleDeleteProject(project.id)}
+                                        onClick={() => setDeleteConfirmation({ show: true, projectId: project.projectId, projectName: project.projectName })}
                                         className="text-red-400 hover:bg-red-900/20 p-2 rounded-lg transition-colors"
                                     >
                                         <Trash2 size={16} />
@@ -315,9 +318,9 @@ const SettingsPage = () => {
                                         <button
                                             onClick={() => toggleKeyVisibility(project.id)}
                                             className="text-gray-400 hover:text-gray-300 p-1 rounded transition-colors"
-                                            title={visibleKeys[project.id] ? "Hide key" : "Show key"}
+                                            title={visibleKeys[project.projectId] ? "Hide key" : "Show key"}
                                         >
-                                            {visibleKeys[project.id] ? <EyeOff size={14} /> : <Eye size={14} />}
+                                            {visibleKeys[project.projectId] ? <EyeOff size={14} /> : <Eye size={14} />}
                                         </button>
                                         <button
                                             onClick={() => handleCopyKey(project.projectId)}
@@ -327,20 +330,20 @@ const SettingsPage = () => {
                                             <Copy size={14} />
                                         </button>
                                         <button
-                                            onClick={() => handleRenewKey(project.id)}
+                                            onClick={() => handleRenewKey(project.projectId)}
                                             className="text-gray-400 hover:text-gray-300 p-1 rounded transition-colors"
                                             title="Renew key"
                                         >
                                             <RotateCw size={14} />
                                         </button>
                                         <button
-                                            onClick={() => handleToggleKey(project.id)}
+                                            onClick={() => handleToggleKey(project.projectId, project.isActive)}
                                             className={`p-1 rounded transition-colors ${
-                                                project.keyEnabled
+                                                project.isActive
                                                     ? 'text-green-400 hover:text-green-300'
                                                     : 'text-red-400 hover:text-red-300'
                                             }`}
-                                            title={project.keyEnabled ? "Disable key" : "Enable key"}
+                                            title={project.isActive ? "Disable key" : "Enable key"}
                                         >
                                             <Power size={14} />
                                         </button>
@@ -351,11 +354,11 @@ const SettingsPage = () => {
                                         {visibleKeys[project.id] ? project.projectId : maskKey(project.projectId)}
                                     </code>
                                     <span className={`text-xs px-2 py-1 rounded ${
-                                        project.keyEnabled
+                                        project.isActive
                                             ? 'bg-green-900/50 text-green-300'
                                             : 'bg-red-900/50 text-red-300'
                                     }`}>
-                                        {project.keyEnabled ? 'Active' : 'Disabled'}
+                                        {project.isActive ? 'Active' : 'Disabled'}
                                     </span>
                                 </div>
                             </div>
@@ -406,6 +409,55 @@ const SettingsPage = () => {
                                         setShowModal(false);
                                         setNewProjectName('');
                                     }}
+                                    className="px-4 py-2 text-gray-300 hover:bg-gray-700 rounded-lg transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Delete Confirmation Modal */}
+            {deleteConfirmation.show && (
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+                    <div className="bg-gray-800 rounded-xl border border-gray-700 p-6 w-full max-w-md mx-4">
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-lg font-semibold text-white">Delete Project</h3>
+                            <button
+                                onClick={() => setDeleteConfirmation({ show: false, projectId: null, projectName: '' })}
+                                className="text-gray-400 hover:text-gray-300 p-1 rounded transition-colors"
+                            >
+                                <X size={20} />
+                            </button>
+                        </div>
+
+                        <div className="space-y-4">
+                            <div className="flex items-center gap-3 p-3 bg-red-900/20 border border-red-700 rounded-lg">
+                                <div className="text-red-400">
+                                    <Trash2 size={20} />
+                                </div>
+                                <div>
+                                    <p className="text-white font-medium">Are you sure you want to delete this project?</p>
+                                    <p className="text-gray-300 text-sm mt-1">
+                                        "{deleteConfirmation.projectName}" will be permanently deleted.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="flex gap-3 pt-4">
+                                <button
+                                    onClick={() => {
+                                        handleDeleteProject(deleteConfirmation.projectId);
+                                        setDeleteConfirmation({ show: false, projectId: null, projectName: '' });
+                                    }}
+                                    className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                                >
+                                    Delete Project
+                                </button>
+                                <button
+                                    onClick={() => setDeleteConfirmation({ show: false, projectId: null, projectName: '' })}
                                     className="px-4 py-2 text-gray-300 hover:bg-gray-700 rounded-lg transition-colors"
                                 >
                                     Cancel
@@ -604,7 +656,7 @@ const SettingsPage = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-900">
+        <div className="min-h-screen">
             <div className="max-w-7xl mx-auto px-4 py-8">
                 <div className="mb-8">
                     <h1 className="text-3xl font-bold text-white">Settings</h1>

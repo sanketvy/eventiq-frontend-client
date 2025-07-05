@@ -4,7 +4,5 @@ import './index.css'
 import AuthManager from "./AuthManager.jsx";
 
 createRoot(document.getElementById('root')).render(
-  <StrictMode>
     <AuthManager />
-  </StrictMode>,
 )

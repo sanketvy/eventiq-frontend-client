@@ -29,14 +29,7 @@ const App = () => {
     const [projectDropdownOpen, setProjectDropdownOpen] = useState(false);
     const [liveFeedPaused, setLiveFeedPaused] = useState(false);
     const [currentUser, setCurrentUser] = useState({});
-    // Sample projects data
-    const projects = [
-        { id: 'project-1', name: 'E-commerce Website', color: 'from-blue-400 to-blue-600' },
-        { id: 'project-2', name: 'Mobile App', color: 'from-green-400 to-green-600' },
-        { id: 'project-3', name: 'SaaS Platform', color: 'from-purple-400 to-purple-600' },
-        { id: 'project-4', name: 'Marketing Site', color: 'from-orange-400 to-orange-600' },
-        { id: 'project-5', name: 'Blog Platform', color: 'from-pink-400 to-pink-600' }
-    ];
+    const [projects, setProjects] = useState([]);
 
     // Close dropdown when clicking outside
     useEffect(() => {
@@ -46,6 +39,12 @@ const App = () => {
                     'Authorization': `Bearer ${token}`
                 }
         }).then(r => setCurrentUser(r.data));
+
+        axios.get(IdentityService.projects, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        }).then(r => setProjects(r.data));
 
         const handleClickOutside = (event) => {
             if (!event.target.closest('.project-dropdown')) {
@@ -75,7 +74,7 @@ const App = () => {
     ];
 
     const getCurrentProject = () => {
-        return projects.find(p => p.id === selectedProject) || projects[0];
+        return projects.find(p => p.projectId === selectedProject) || projects[0];
     };
 
     const renderMainContent = () => {
@@ -105,7 +104,7 @@ const App = () => {
                 );
             case 'settings':
                 return (
-                    <SettingsPage selectedProject={selectedProject} />
+                    <SettingsPage selectedProject={selectedProject} updateProjects={setProjects} />
                 );
             default:
                 return <div className="text-white">Content for {activeTab}</div>;
@@ -181,8 +180,8 @@ const App = () => {
                                     onClick={() => setProjectDropdownOpen(!projectDropdownOpen)}
                                     className="flex items-center space-x-2 px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg hover:bg-slate-700/50 transition-colors"
                                 >
-                                    <div className={`w-3 h-3 rounded-full bg-gradient-to-r ${getCurrentProject().color}`}></div>
-                                    <span className="text-sm font-medium text-white">{getCurrentProject().name}</span>
+                                    <div className={`w-3 h-3 rounded-full bg-gradient-to-r from-purple-400 to-purple-600`}></div>
+                                    <span className="text-sm font-medium text-white">{getCurrentProject()?.projectName}</span>
                                     <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${projectDropdownOpen ? 'rotate-180' : ''}`} />
                                 </button>
 
@@ -197,19 +196,19 @@ const App = () => {
                                             <div className="p-2">
                                                 {projects.map((project) => (
                                                     <button
-                                                        key={project.id}
+                                                        key={project.projectId}
                                                         onClick={() => {
-                                                            setSelectedProject(project.id);
+                                                            setSelectedProject(project.projectId);
                                                             setProjectDropdownOpen(false);
                                                         }}
                                                         className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors ${
-                                                            selectedProject === project.id
+                                                            selectedProject === project.projectId
                                                                 ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
                                                                 : 'hover:bg-slate-700/50 text-slate-300'
                                                         }`}
                                                     >
-                                                        <div className={`w-3 h-3 rounded-full bg-gradient-to-r ${project.color}`}></div>
-                                                        <span className="text-sm font-medium">{project.name}</span>
+                                                        <div className={`w-3 h-3 rounded-full from-purple-400 to-purple-600`}></div>
+                                                        <span className="text-sm font-medium">{project.projectName}</span>
                                                     </button>
                                                 ))}
                                             </div>
