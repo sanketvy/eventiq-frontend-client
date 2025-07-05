@@ -1,4 +1,4 @@
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import axios from "axios";
 import {Elements} from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
@@ -12,6 +12,7 @@ export const BillingTab = () => {
     const [modalOpen, setModalOpen] = useState(false);
     const stripePromise = loadStripe("pk_test_51RhGXsR0zLfhT2uZGcgcyLPmCNOAPOdUtPkfL28yqoaXtgWPyBec035bdgFljBNlhuQZRDdYw7DTGnAftHSpg3FA00fvEb4HI0");
 
+    const [billingData, setBillingData]= useState({});
     const handleClick = async (plan) => {
         // Call backend to create PaymentIntent
         const response = await axios.post(IdentityService.payment, {
@@ -23,17 +24,10 @@ export const BillingTab = () => {
         setModalOpen(true);
     };
 
-    const billingData = {
-        plan: 'Free Plan',
-        nextBilling: 'Unlimited',
-        amount: '$0.00',
-        method: 'None',
-        usage: {
-            events: 50,
-            limit: 1000,
-            percentage: 5
-        }
-    };
+    useEffect(() => {
+        axios.get(IdentityService.billing, {headers: {Authorization: `Bearer ${getToken()}`}})
+            .then(res => setBillingData(res.data) )
+    }, [modalOpen]);
 
     return (
         <div className="space-y-8">
@@ -45,19 +39,15 @@ export const BillingTab = () => {
                     <div className="space-y-3">
                         <div className="flex justify-between">
                             <span className="text-gray-400">Plan</span>
-                            <span className="font-medium text-gray-100">{billingData.plan}</span>
+                            <span className="font-medium text-gray-100">{billingData?.plan}</span>
                         </div>
                         <div className="flex justify-between">
                             <span className="text-gray-400">Next Billing</span>
-                            <span className="font-medium text-gray-100">{billingData.nextBilling}</span>
-                        </div>
-                        <div className="flex justify-between">
-                            <span className="text-gray-400">Amount</span>
-                            <span className="font-medium text-gray-100">{billingData.amount}</span>
+                            <span className="font-medium text-gray-100">{billingData.nextBillingDate === null ? "Forever" : billingData.nextBillingDate}</span>
                         </div>
                         <div className="flex justify-between">
                             <span className="text-gray-400">Payment Method</span>
-                            <span className="font-medium text-gray-100">{billingData.method}</span>
+                            <span className="font-medium text-gray-100">Card</span>
                         </div>
                     </div>
                 </div>
@@ -70,30 +60,40 @@ export const BillingTab = () => {
                                 <div className="flex justify-between mb-2">
                                     <span className="text-gray-400">Events Tracked</span>
                                     <span
-                                        className="font-medium text-gray-100">{billingData.usage.events.toLocaleString()} / {billingData.usage.limit.toLocaleString()}</span>
+                                        className="font-medium text-gray-100">{billingData?.eventsUsed} / {billingData?.eventLimit}</span>
                                 </div>
                                 <div className="w-full bg-gray-700 rounded-full h-2">
                                     <div
                                         className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                                        style={{width: `${billingData.usage.percentage}%`}}
+                                        style={{
+                                            width: `${Math.min(
+                                                Math.round((billingData?.eventsUsed / billingData?.eventLimit) * 100),
+                                                100
+                                            )}%`
+                                        }}
                                     ></div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div className="bg-gray-800 rounded-xl border border-gray-700 p-6 mt-2">
+                    <div className="bg-gray-800 rounded-xl border border-gray-700 p-6">
                         <h3 className="text-lg font-semibold text-white mb-4">Usage This Month</h3>
                         <div className="space-y-4">
                             <div>
                                 <div className="flex justify-between mb-2">
-                                    <span className="text-gray-400">Projects Tracked</span>
+                                    <span className="text-gray-400">Events Tracked</span>
                                     <span
-                                        className="font-medium text-gray-100">{billingData.usage.events.toLocaleString()} / {billingData.usage.limit.toLocaleString()}</span>
+                                        className="font-medium text-gray-100">{billingData?.projectsUsed} / {billingData?.projectLimit}</span>
                                 </div>
                                 <div className="w-full bg-gray-700 rounded-full h-2">
                                     <div
                                         className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                                        style={{width: `${billingData.usage.percentage}%`}}
+                                        style={{
+                                            width: `${Math.min(
+                                                Math.round((billingData?.projectsUsed / billingData?.projectLimit) * 100),
+                                                100
+                                            )}%`
+                                        }}
                                     ></div>
                                 </div>
                             </div>
@@ -143,10 +143,19 @@ export const BillingTab = () => {
                         </div>
 
                         <button
-                            className="w-full py-3 px-4 bg-gray-600 text-gray-400 rounded-lg font-medium cursor-not-allowed"
-                            disabled
+                            disabled={billingData.plan === "FREE"}
+                            className={`w-full py-3 px-4 rounded-lg font-medium transition-colors duration-200 
+        ${billingData.plan === "FREE"
+                                ? "bg-gray-600 text-gray-400 cursor-not-allowed"
+                                : "bg-blue-600 hover:bg-blue-700 text-white"}
+    `}
+                            onClick={() => {
+                                if (billingData.plan !== "FREE") {
+                                    handleClick('FREE');
+                                }
+                            }}
                         >
-                            Current Plan
+                            {billingData.plan === "FREE" ? "Current Plan" : "Free Plan"}
                         </button>
                     </div>
 
@@ -192,10 +201,19 @@ export const BillingTab = () => {
                         </div>
 
                         <button
-                            className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors duration-200"
-                            onClick={() => handleClick('PRO')}
+                            disabled={billingData.plan === "PRO"}
+                            className={`w-full py-3 px-4 rounded-lg font-medium transition-colors duration-200 
+        ${billingData.plan === "PRO"
+                                ? "bg-gray-600 text-gray-400 cursor-not-allowed"
+                                : "bg-blue-600 hover:bg-blue-700 text-white"}
+    `}
+                            onClick={() => {
+                                if (billingData.plan !== "PRO") {
+                                    handleClick('PRO');
+                                }
+                            }}
                         >
-                            Upgrade to Pro
+                            {billingData.plan === "PRO" ? "Current Plan" : "Upgrade to Pro"}
                         </button>
                     </div>
 
@@ -235,10 +253,19 @@ export const BillingTab = () => {
                         </div>
 
                         <button
-                            className="w-full py-3 px-4 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-colors duration-200"
-                            onClick={() => handleClick('ENTERPRISE')}
+                            disabled={billingData.plan === "ENTERPRISE"}
+                            className={`w-full py-3 px-4 rounded-lg font-medium transition-colors duration-200 
+        ${billingData.plan === "ENTERPRISE"
+                                ? "bg-gray-600 text-gray-400 cursor-not-allowed"
+                                : "bg-blue-600 hover:bg-blue-700 text-white"}
+    `}
+                            onClick={() => {
+                                if (billingData.plan !== "ENTERPRISE") {
+                                    handleClick('ENTERPRISE');
+                                }
+                            }}
                         >
-                            Upgrade to Enterprise
+                            {billingData.plan === "ENTERPRISE" ? "Current Plan" : "Upgrade to Enterprise"}
                         </button>
                     </div>
                 </div>

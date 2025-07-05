@@ -5,5 +5,6 @@ export const IdentityService = {
     projects: basePath + "/api/identity/project",
     user : basePath + "/api/identity/user",
     payment : basePath + "/api/identity/payment/intent",
-    paymentStatus : basePath + "/api/identity/payment/status"
+    paymentStatus : basePath + "/api/identity/payment/status",
+    billing : basePath + "/api/identity/billing"
 }
