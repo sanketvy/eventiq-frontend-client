@@ -3,6 +3,7 @@ import { User, Plus, CreditCard, Bell, Settings, Mail, Shield, Trash2, Edit3, Sa
 import axios from "axios";
 import {IdentityService} from "../utils/RestPaths.js";
 import {getToken} from "../KeycloakService.js";
+import {BillingTab} from "../components/BillingTab.jsx";
 
 const SettingsPage = ({updateProjects}) => {
     const [activeTab, setActiveTab] = useState('profile');
@@ -27,17 +28,6 @@ const SettingsPage = ({updateProjects}) => {
         timezone: 'UTC-5'
     });
 
-    const billingData = {
-        plan: 'Professional',
-        nextBilling: '2024-07-15',
-        amount: '$49.99',
-        method: '**** **** **** 1234',
-        usage: {
-            events: 125000,
-            limit: 500000,
-            percentage: 25
-        }
-    };
 
     const handleSaveProfile = () => {
         setIsEditing(false);
@@ -470,53 +460,6 @@ const SettingsPage = ({updateProjects}) => {
         </div>
     );
 
-    const renderBillingTab = () => (
-        <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-white">Billing & Usage</h2>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className="bg-gray-800 rounded-xl border border-gray-700 p-6">
-                    <h3 className="text-lg font-semibold text-white mb-4">Current Plan</h3>
-                    <div className="space-y-3">
-                        <div className="flex justify-between">
-                            <span className="text-gray-400">Plan</span>
-                            <span className="font-medium text-gray-100">{billingData.plan}</span>
-                        </div>
-                        <div className="flex justify-between">
-                            <span className="text-gray-400">Next Billing</span>
-                            <span className="font-medium text-gray-100">{billingData.nextBilling}</span>
-                        </div>
-                        <div className="flex justify-between">
-                            <span className="text-gray-400">Amount</span>
-                            <span className="font-medium text-gray-100">{billingData.amount}</span>
-                        </div>
-                        <div className="flex justify-between">
-                            <span className="text-gray-400">Payment Method</span>
-                            <span className="font-medium text-gray-100">{billingData.method}</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="bg-gray-800 rounded-xl border border-gray-700 p-6">
-                    <h3 className="text-lg font-semibold text-white mb-4">Usage This Month</h3>
-                    <div className="space-y-4">
-                        <div>
-                            <div className="flex justify-between mb-2">
-                                <span className="text-gray-400">Events Tracked</span>
-                                <span className="font-medium text-gray-100">{billingData.usage.events.toLocaleString()} / {billingData.usage.limit.toLocaleString()}</span>
-                            </div>
-                            <div className="w-full bg-gray-700 rounded-full h-2">
-                                <div
-                                    className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                                    style={{ width: `${billingData.usage.percentage}%` }}
-                                ></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
 
     const renderNotificationsTab = () => (
         <div className="space-y-6">
@@ -645,7 +588,7 @@ const SettingsPage = ({updateProjects}) => {
             case 'projects':
                 return renderProjectsTab();
             case 'billing':
-                return renderBillingTab();
+                return <BillingTab />;
             case 'notifications':
                 return renderNotificationsTab();
             case 'security':

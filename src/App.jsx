@@ -34,6 +34,7 @@ const App = () => {
     // Close dropdown when clicking outside
     useEffect(() => {
         const token = getToken();
+        console.log(token)
         axios.get(IdentityService.currentUser, {
                 headers: {
                     'Authorization': `Bearer ${token}`
