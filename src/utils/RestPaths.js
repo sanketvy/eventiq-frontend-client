@@ -8,3 +8,7 @@ export const IdentityService = {
     paymentStatus : basePath + "/api/identity/payment/status",
     billing : basePath + "/api/identity/billing"
 }
+
+export const AnalyticsService = {
+    analytics: basePath + "/api/analytics/dashboard/v1"
+}

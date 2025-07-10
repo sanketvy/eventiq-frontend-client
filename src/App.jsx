@@ -8,33 +8,32 @@ import {
     Home, Users, TrendingUp, Globe, Smartphone, Settings, Bell, Search, RefreshCcw,
     ChevronLeft, ChevronRight, ChevronDown
 } from 'lucide-react';
-import Overview from "./pages/Overview.jsx";
+import OverviewPage from "./pages/OverviewPage.jsx";
 import Geography from "./pages/Geography.jsx";
-import UsersPage from "./pages/UsersPage.jsx";
+import UsersPage from "./pages/UniversalAnalyticsDashboard.jsx";
 import DevicesPage from "./pages/DevicesPage.jsx";
 import AnalyticsPage from "./pages/AnalyticsPage.jsx";
 import SettingsPage from "./pages/SettingsPage.jsx";
 import {getToken, logout} from "./KeycloakService.js";
 import {IdentityService} from "./utils/RestPaths.js";
 import axios from 'axios';
+import UniversalAnalyticsDashboard from "./pages/UniversalAnalyticsDashboard.jsx";
 
 
 const App = () => {
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const [activeTab, setActiveTab] = useState('overview');
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-    const [realTimeEnabled, setRealTimeEnabled] = useState(true);
-    const [selectedTimeRange, setSelectedTimeRange] = useState('7d');
-    const [selectedProject, setSelectedProject] = useState('project-1');
+    const [selectedTimeRange, setSelectedTimeRange] = useState('15m');
+    const [selectedProject, setSelectedProject] = useState("");
     const [projectDropdownOpen, setProjectDropdownOpen] = useState(false);
-    const [liveFeedPaused, setLiveFeedPaused] = useState(false);
+    const [refresh, setRefresh] = useState(false);
     const [currentUser, setCurrentUser] = useState({});
     const [projects, setProjects] = useState([]);
 
     // Close dropdown when clicking outside
     useEffect(() => {
         const token = getToken();
-        console.log(token)
         axios.get(IdentityService.currentUser, {
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -45,7 +44,10 @@ const App = () => {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
-        }).then(r => setProjects(r.data));
+        }).then(r => {
+            setProjects(r.data)
+            setSelectedProject(r.data[0].projectId)
+        });
 
         const handleClickOutside = (event) => {
             if (!event.target.closest('.project-dropdown')) {
@@ -59,19 +61,18 @@ const App = () => {
 
     const sidebarItems = [
         { id: 'overview', icon: Home, label: 'Overview' },
-        { id: 'users', icon: Users, label: 'Users' },
-        { id: 'analytics', icon: TrendingUp, label: 'Analytics' },
+        { id: 'users', icon: Users, label: 'Sessions' },
+        // { id: 'analytics', icon: TrendingUp, label: 'Analytics' },
         { id: 'geography', icon: Globe, label: 'Geography' },
         { id: 'devices', icon: Smartphone, label: 'Devices' },
         { id: 'settings', icon: Settings, label: 'Settings' }
     ];
 
     const timeRanges = [
+        { value: '15m', label: '15 Minutes' },
         { value: '1h', label: '1 Hour' },
-        { value: '24h', label: '24 Hours' },
-        { value: '7d', label: '7 Days' },
-        { value: '30d', label: '30 Days' },
-        { value: '90d', label: '90 Days' }
+        { value: '1d', label: '1 Day' },
+        { value: '1w', label: '1 Week' },
     ];
 
     const getCurrentProject = () => {
@@ -82,12 +83,12 @@ const App = () => {
         switch (activeTab) {
             case 'overview':
                 return (
-                    <Overview selectedProject={selectedProject} />
+                    <OverviewPage selectedProject={selectedProject} selectedTimeRange={selectedTimeRange} refresh={refresh} />
                 );
 
             case 'users':
                 return (
-                    <UsersPage selectedProject={selectedProject} />
+                    <UniversalAnalyticsDashboard selectedProject={selectedProject} />
                 );
 
             case 'analytics':
@@ -111,6 +112,12 @@ const App = () => {
                 return <div className="text-white">Content for {activeTab}</div>;
         }
     };
+
+    if (selectedProject === ""){
+        return (
+            <h1>Loading</h1>
+        )
+    }
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-black text-white">
@@ -247,9 +254,8 @@ const App = () => {
                             </div>
 
                             {/* Notification Button */}
-                            <button className="p-2 hover:bg-slate-700/50 rounded-lg transition-colors relative">
-                                <Bell className="w-5 h-5 text-slate-400" />
-                                <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></div>
+                            <button className="p-2 hover:bg-slate-700/50 rounded-lg transition-colors relative" onClick={()=> setRefresh(!refresh)}>
+                                <RefreshCcw className="w-5 h-5 text-slate-400" />
                             </button>
 
                             {/* User Dropdown */}

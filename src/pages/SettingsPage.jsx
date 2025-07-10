@@ -124,7 +124,7 @@ const SettingsPage = ({updateProjects}) => {
     const tabs = [
         { id: 'profile', label: 'Profile', icon: User },
         { id: 'projects', label: 'Analytics Projects', icon: Settings },
-        { id: 'billing', label: 'Billing', icon: CreditCard },
+        // { id: 'billing', label: 'Billing', icon: CreditCard },
         { id: 'notifications', label: 'Notifications', icon: Bell },
         { id: 'security', label: 'Security', icon: Shield }
     ];
