@@ -255,96 +255,14 @@ const Geography = () => {
 
     return (
         <div className="min-h-screen text-white">
-            <div className="p-2">
-                {/* Header */}
-                <div className="mb-8">
-                    <div className="flex items-center justify-between mb-6">
-                        <div>
-                            <h1 className="text-3xl font-bold text-white mb-2">Geography Analytics</h1>
-                            <p className="text-slate-400">Real-time geographic distribution of user sessions</p>
-                        </div>
-                        <div className="flex items-center space-x-4">
-                            <div className="flex items-center space-x-2">
-                                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                                <span className="text-sm text-slate-400">Live</span>
-                            </div>
-                            <div className="text-right">
-                                <p className="text-sm text-slate-400">Last updated</p>
-                                <p className="text-white font-medium">{currentTime.toLocaleTimeString()}</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Key Metrics */}
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                        <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50">
-                            <div className="flex items-center justify-between mb-4">
-                                <div className="p-3 bg-blue-500/20 rounded-lg">
-                                    <Users className="w-6 h-6 text-blue-400" />
-                                </div>
-                                <TrendingUp className="w-4 h-4 text-green-400" />
-                            </div>
-                            <div>
-                                <p className="text-2xl font-bold text-white mb-1">
-                                    {totalSessions.toLocaleString()}
-                                </p>
-                                <p className="text-slate-400 text-sm">Total Sessions</p>
-                            </div>
-                        </div>
-
-                        <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50">
-                            <div className="flex items-center justify-between mb-4">
-                                <div className="p-3 bg-purple-500/20 rounded-lg">
-                                    <Timer className="w-6 h-6 text-purple-400" />
-                                </div>
-                                <Activity className="w-4 h-4 text-blue-400" />
-                            </div>
-                            <div>
-                                <p className="text-2xl font-bold text-white mb-1">
-                                    {formatDuration(avgDuration)}
-                                </p>
-                                <p className="text-slate-400 text-sm">Avg Duration</p>
-                            </div>
-                        </div>
-
-                        <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50">
-                            <div className="flex items-center justify-between mb-4">
-                                <div className="p-3 bg-yellow-500/20 rounded-lg">
-                                    <Percent className="w-6 h-6 text-yellow-400" />
-                                </div>
-                                <TrendingDown className="w-4 h-4 text-red-400" />
-                            </div>
-                            <div>
-                                <p className="text-2xl font-bold text-white mb-1">
-                                    {formatPercentage(avgBounceRate)}
-                                </p>
-                                <p className="text-slate-400 text-sm">Avg Bounce Rate</p>
-                            </div>
-                        </div>
-
-                        <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50">
-                            <div className="flex items-center justify-between mb-4">
-                                <div className="p-3 bg-green-500/20 rounded-lg">
-                                    <Target className="w-6 h-6 text-green-400" />
-                                </div>
-                                <TrendingUp className="w-4 h-4 text-green-400" />
-                            </div>
-                            <div>
-                                <p className="text-2xl font-bold text-white mb-1">
-                                    {formatPercentage(avgConversionRate)}
-                                </p>
-                                <p className="text-slate-400 text-sm">Avg Conversion</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            <div className="">
 
                 {/* Main Content */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     {/* Country List */}
                     <div className="lg:col-span-2">
-                        <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/50">
-                            <div className="p-6 border-b border-slate-700/50">
+                        <div className="">
+                            <div className="p-2 border-b border-slate-700/50">
                                 <div className="flex items-center justify-between mb-4">
                                     <h2 className="text-xl font-semibold text-white">Geographic Distribution</h2>
                                     <div className="flex items-center space-x-2">
