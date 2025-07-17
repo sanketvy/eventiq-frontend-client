@@ -10,14 +10,14 @@ import {
 } from 'lucide-react';
 import OverviewPage from "./pages/OverviewPage.jsx";
 import Geography from "./pages/Geography.jsx";
-import UsersPage from "./pages/UniversalAnalyticsDashboard.jsx";
+import UsersPage from "./pages/SessionsPage.jsx";
 import DevicesPage from "./pages/DevicesPage.jsx";
 import AnalyticsPage from "./pages/AnalyticsPage.jsx";
 import SettingsPage from "./pages/SettingsPage.jsx";
 import {getToken, logout} from "./KeycloakService.js";
 import {IdentityService} from "./utils/RestPaths.js";
 import axios from 'axios';
-import UniversalAnalyticsDashboard from "./pages/UniversalAnalyticsDashboard.jsx";
+import SessionsPage from "./pages/SessionsPage.jsx";
 
 
 const App = () => {
@@ -34,6 +34,7 @@ const App = () => {
     // Close dropdown when clicking outside
     useEffect(() => {
         const token = getToken();
+        console.log(token)
         axios.get(IdentityService.currentUser, {
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -61,7 +62,7 @@ const App = () => {
 
     const sidebarItems = [
         { id: 'overview', icon: Home, label: 'Overview' },
-        { id: 'users', icon: Users, label: 'Sessions' },
+        { id: 'session', icon: Users, label: 'Sessions' },
         // { id: 'analytics', icon: TrendingUp, label: 'Analytics' },
         { id: 'geography', icon: Globe, label: 'Geography' },
         { id: 'devices', icon: Smartphone, label: 'Devices' },
@@ -86,9 +87,9 @@ const App = () => {
                     <OverviewPage selectedProject={selectedProject} selectedTimeRange={selectedTimeRange} refresh={refresh} />
                 );
 
-            case 'users':
+            case 'session':
                 return (
-                    <UniversalAnalyticsDashboard selectedProject={selectedProject} />
+                    <SessionsPage selectedProject={selectedProject} selectedTimeRange={selectedTimeRange} />
                 );
 
             case 'analytics':

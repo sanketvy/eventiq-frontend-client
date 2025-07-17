@@ -312,15 +312,6 @@ const OverviewPage = ({ selectedProject, selectedTimeRange, refresh }) => {
                                 fillOpacity={0.3}
                                 name="Total Sessions"
                             />
-                            <Area
-                                type="monotone"
-                                dataKey="concurrent"
-                                stackId="2"
-                                stroke="#22c55e"
-                                fill="#22c55e"
-                                fillOpacity={0.6}
-                                name="Concurrent Users"
-                            />
                         </AreaChart>
                     </ResponsiveContainer>
                 </div>
@@ -444,121 +435,6 @@ const OverviewPage = ({ selectedProject, selectedTimeRange, refresh }) => {
                                     );
                                 })}
                             </div>
-                        </div>
-                    </div>
-                </div>
-                {/* Geographic Distribution and Device Analytics */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {/* Enhanced Geographic Distribution */}
-                    {/* Enhanced Geographic Distribution */}
-                    <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-xl p-6">
-                        <h3 className="text-xl font-semibold text-white mb-6">Geographic Distribution</h3>
-                        <div className="flex items-center justify-center mb-6">
-                            <div style={{ width: '100%', height: '300px' }}>
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <PieChart>
-                                        <Pie
-                                            data={geographicData}
-                                            cx="50%"
-                                            cy="50%"
-                                            outerRadius="80%"
-                                            innerRadius="50%"
-                                            dataKey="users"
-                                            startAngle={90}
-                                            endAngle={450}
-                                            paddingAngle={2}
-                                        >
-                                            {geographicData.map((entry, index) => (
-                                                <Cell key={`cell-${index}`} fill={entry.color} />
-                                            ))}
-                                        </Pie>
-                                        <Tooltip
-                                            contentStyle={{
-                                                backgroundColor: '#1e293b',
-                                                border: '1px solid #475569',
-                                                borderRadius: '8px'
-                                            }}
-                                        />
-                                    </PieChart>
-                                </ResponsiveContainer>
-                            </div>
-                        </div>
-                        <div className="overflow-x-auto">
-                            <div className="flex space-x-4 pb-2 min-w-max">
-                                {geographicData.map((country, index) => (
-                                    <div key={country.country} className="flex-shrink-0 w-48 p-4 bg-slate-700/30 rounded-lg">
-                                        <div className="flex items-center space-x-3 mb-3">
-                                            <span className="text-2xl">{country.flag}</span>
-                                            <div className="flex items-center space-x-2">
-                                                <div
-                                                    className="w-3 h-3 rounded-full"
-                                                    style={{ backgroundColor: country.color }}
-                                                />
-                                                <span className="text-white font-semibold">{country.percentage}%</span>
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <p className="text-white font-medium mb-1">{country.country}</p>
-                                            <p className="text-slate-400 text-sm">{country.users.toLocaleString()} users</p>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Device Distribution */}
-                    <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-xl p-6">
-                        <h3 className="text-xl font-semibold text-white mb-6">Device Distribution</h3>
-                        <div className="flex items-center justify-center mb-6">
-                            <div style={{ width: '100%', height: '300px' }}>
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <PieChart>
-                                        <Pie
-                                            data={deviceData}
-                                            cx="50%"
-                                            cy="50%"
-                                            outerRadius="80%"
-                                            innerRadius="50%"
-                                            dataKey="value"
-                                            startAngle={90}
-                                            endAngle={450}
-                                            paddingAngle={5}
-                                        >
-                                            {deviceData.map((entry, index) => (
-                                                <Cell key={`cell-${index}`} fill={entry.color} />
-                                            ))}
-                                        </Pie>
-                                        <Tooltip
-                                            contentStyle={{
-                                                backgroundColor: '#1e293b',
-                                                border: '1px solid #475569',
-                                                borderRadius: '8px'
-                                            }}
-                                        />
-                                    </PieChart>
-                                </ResponsiveContainer>
-                            </div>
-                        </div>
-                        <div className="grid grid-cols-3 gap-4">
-                            {deviceData.map((device) => {
-                                const IconComponent = device.icon;
-                                return (
-                                    <div key={device.name} className="text-center p-3 bg-slate-700/30 rounded-lg">
-                                        <div className="flex items-center justify-center mb-3">
-                                            <IconComponent className="w-6 h-6 text-slate-400" />
-                                        </div>
-                                        <div className="flex items-center justify-center mb-2">
-                                            <div
-                                                className="w-3 h-3 rounded-full mr-2"
-                                                style={{ backgroundColor: device.color }}
-                                            />
-                                            <span className="text-sm text-slate-300">{device.name}</span>
-                                        </div>
-                                        <div className="text-xl font-bold text-white">{device.value}%</div>
-                                    </div>
-                                );
-                            })}
                         </div>
                     </div>
                 </div>
