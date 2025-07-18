@@ -20,147 +20,30 @@ import {
     Timer,
     Percent
 } from "lucide-react";
+import {AnalyticsService} from "../utils/RestPaths.js";
+import {getToken} from "../KeycloakService.js";
+import axios from "axios";
 
-const Geography = () => {
+const Geography = ({selectedProject, refresh}) => {
     const [selectedTimeframe, setSelectedTimeframe] = useState('15m');
     const [selectedCountry, setSelectedCountry] = useState(null);
     const [currentTime, setCurrentTime] = useState(new Date());
     const [searchTerm, setSearchTerm] = useState('');
+    const [geographyData, setGeographyData] = useState([]);
 
     // Update time every second
     useEffect(() => {
-        const timer = setInterval(() => {
-            setCurrentTime(new Date());
-        }, 1000);
-        return () => clearInterval(timer);
-    }, []);
-
-    // Generate mock geography data
-    const generateGeographyData = () => {
-        const countries = [
-            {
-                name: 'India',
-                code: 'IN',
-                flag: '🇮🇳',
-                sessions: 847,
-                avgDuration: 245,
-                bounceRate: 0.32,
-                conversionRate: 0.08,
-                trend: 'up',
-                cities: [
-                    { name: 'Mumbai', sessions: 298, avgDuration: 267, bounceRate: 0.28 },
-                    { name: 'Pune', sessions: 186, avgDuration: 312, bounceRate: 0.24 },
-                    { name: 'Bangalore', sessions: 154, avgDuration: 289, bounceRate: 0.31 },
-                    { name: 'Delhi', sessions: 142, avgDuration: 198, bounceRate: 0.38 },
-                    { name: 'Chennai', sessions: 67, avgDuration: 223, bounceRate: 0.35 }
-                ]
-            },
-            {
-                name: 'Canada',
-                code: 'CA',
-                flag: '🇨🇦',
-                sessions: 423,
-                avgDuration: 198,
-                bounceRate: 0.45,
-                conversionRate: 0.12,
-                trend: 'up',
-                cities: [
-                    { name: 'Toronto', sessions: 156, avgDuration: 234, bounceRate: 0.41 },
-                    { name: 'Vancouver', sessions: 98, avgDuration: 189, bounceRate: 0.48 },
-                    { name: 'Montreal', sessions: 87, avgDuration: 167, bounceRate: 0.52 },
-                    { name: 'Calgary', sessions: 52, avgDuration: 201, bounceRate: 0.43 },
-                    { name: 'Ottawa', sessions: 30, avgDuration: 178, bounceRate: 0.46 }
-                ]
-            },
-            {
-                name: 'United States',
-                code: 'US',
-                flag: '🇺🇸',
-                sessions: 1234,
-                avgDuration: 189,
-                bounceRate: 0.41,
-                conversionRate: 0.09,
-                trend: 'stable',
-                cities: [
-                    { name: 'New York', sessions: 345, avgDuration: 234, bounceRate: 0.38 },
-                    { name: 'Los Angeles', sessions: 298, avgDuration: 178, bounceRate: 0.44 },
-                    { name: 'Chicago', sessions: 187, avgDuration: 201, bounceRate: 0.39 },
-                    { name: 'Houston', sessions: 156, avgDuration: 167, bounceRate: 0.46 },
-                    { name: 'Phoenix', sessions: 248, avgDuration: 189, bounceRate: 0.42 }
-                ]
-            },
-            {
-                name: 'United Kingdom',
-                code: 'GB',
-                flag: '🇬🇧',
-                sessions: 367,
-                avgDuration: 234,
-                bounceRate: 0.38,
-                conversionRate: 0.11,
-                trend: 'down',
-                cities: [
-                    { name: 'London', sessions: 198, avgDuration: 278, bounceRate: 0.32 },
-                    { name: 'Manchester', sessions: 67, avgDuration: 201, bounceRate: 0.41 },
-                    { name: 'Birmingham', sessions: 45, avgDuration: 189, bounceRate: 0.44 },
-                    { name: 'Leeds', sessions: 34, avgDuration: 167, bounceRate: 0.48 },
-                    { name: 'Glasgow', sessions: 23, avgDuration: 156, bounceRate: 0.52 }
-                ]
-            },
-            {
-                name: 'Germany',
-                code: 'DE',
-                flag: '🇩🇪',
-                sessions: 298,
-                avgDuration: 267,
-                bounceRate: 0.35,
-                conversionRate: 0.13,
-                trend: 'up',
-                cities: [
-                    { name: 'Berlin', sessions: 134, avgDuration: 298, bounceRate: 0.31 },
-                    { name: 'Munich', sessions: 78, avgDuration: 245, bounceRate: 0.36 },
-                    { name: 'Hamburg', sessions: 45, avgDuration: 234, bounceRate: 0.38 },
-                    { name: 'Cologne', sessions: 23, avgDuration: 201, bounceRate: 0.42 },
-                    { name: 'Frankfurt', sessions: 18, avgDuration: 189, bounceRate: 0.44 }
-                ]
-            },
-            {
-                name: 'France',
-                code: 'FR',
-                flag: '🇫🇷',
-                sessions: 234,
-                avgDuration: 198,
-                bounceRate: 0.42,
-                conversionRate: 0.07,
-                trend: 'stable',
-                cities: [
-                    { name: 'Paris', sessions: 134, avgDuration: 234, bounceRate: 0.38 },
-                    { name: 'Lyon', sessions: 45, avgDuration: 189, bounceRate: 0.44 },
-                    { name: 'Marseille', sessions: 32, avgDuration: 167, bounceRate: 0.48 },
-                    { name: 'Toulouse', sessions: 23, avgDuration: 156, bounceRate: 0.52 }
-                ]
-            },
-            {
-                name: 'Australia',
-                code: 'AU',
-                flag: '🇦🇺',
-                sessions: 189,
-                avgDuration: 278,
-                bounceRate: 0.29,
-                conversionRate: 0.14,
-                trend: 'up',
-                cities: [
-                    { name: 'Sydney', sessions: 89, avgDuration: 312, bounceRate: 0.26 },
-                    { name: 'Melbourne', sessions: 67, avgDuration: 267, bounceRate: 0.31 },
-                    { name: 'Brisbane', sessions: 23, avgDuration: 234, bounceRate: 0.34 },
-                    { name: 'Perth', sessions: 10, avgDuration: 198, bounceRate: 0.38 }
-                ]
+        axios.post(AnalyticsService.location, {
+            projectId: selectedProject
+        }, {
+            headers: {
+                Authorization: `Bearer ${getToken()}`
             }
-        ];
-
-        return countries.sort((a, b) => b.sessions - a.sessions);
-    };
-
-    const [geographyData] = useState(generateGeographyData());
+        }).then(res => {
+            console.log(res.data);
+            setGeographyData(res.data);
+        })
+    }, [refresh, selectedProject]);
 
     const totalSessions = geographyData.reduce((sum, country) => sum + country.sessions, 0);
     const avgDuration = Math.round(geographyData.reduce((sum, country) => sum + country.avgDuration, 0) / geographyData.length);
@@ -201,57 +84,21 @@ const Geography = () => {
         country.cities.some(city => city.name.toLowerCase().includes(searchTerm.toLowerCase()))
     );
 
-    const generateInsights = () => {
-        const insights = [];
-
-        // Top performing country
-        const topCountry = geographyData[0];
-        insights.push({
-            type: 'positive',
-            icon: Target,
-            title: `${topCountry.name} Leading Sessions`,
-            description: `${topCountry.name} accounts for ${getCountryPercentage(topCountry.sessions)}% of total sessions with ${topCountry.sessions} sessions.`,
-            color: 'text-green-400'
-        });
-
-        // High engagement country
-        const highEngagement = geographyData.find(c => c.avgDuration > 250 && c.bounceRate < 0.35);
-        if (highEngagement) {
-            insights.push({
-                type: 'positive',
-                icon: Timer,
-                title: 'High Engagement Market',
-                description: `${highEngagement.name} shows strong engagement with ${formatDuration(highEngagement.avgDuration)} avg duration and ${formatPercentage(highEngagement.bounceRate)} bounce rate.`,
-                color: 'text-blue-400'
-            });
-        }
-
-        // Conversion leader
-        const conversionLeader = geographyData.reduce((max, country) =>
-            country.conversionRate > max.conversionRate ? country : max
-        );
-        insights.push({
-            type: 'positive',
-            icon: CheckCircle,
-            title: 'Conversion Leader',
-            description: `${conversionLeader.name} leads in conversions with ${formatPercentage(conversionLeader.conversionRate)} conversion rate.`,
-            color: 'text-emerald-400'
-        });
-
-        // High bounce rate warning
-        const highBounce = geographyData.find(c => c.bounceRate > 0.45);
-        if (highBounce) {
-            insights.push({
-                type: 'warning',
-                icon: AlertCircle,
-                title: 'High Bounce Rate Alert',
-                description: `${highBounce.name} has elevated bounce rate at ${formatPercentage(highBounce.bounceRate)}. Consider localization improvements.`,
-                color: 'text-yellow-400'
-            });
-        }
-
-        return insights;
-    };
+    // const generateInsights = () => {
+    //     const insights = [];
+    //
+    //     // Top performing country
+    //     const topCountry = geographyData[0];
+    //     insights.push({
+    //         type: 'positive',
+    //         icon: Target,
+    //         title: `${topCountry?.name} Leading Sessions`,
+    //         description: `${topCountry?.name} accounts for ${getCountryPercentage(topCountry?.sessions)}% of total sessions with ${topCountry.sessions} sessions.`,
+    //         color: 'text-green-400'
+    //     });
+    //
+    //     return insights;
+    // };
 
     return (
         <div className="min-h-screen text-white">
@@ -301,14 +148,14 @@ const Geography = () => {
                                                         </div>
                                                     </div>
                                                     <div className="flex items-center space-x-4 text-right">
-                                                        <div>
-                                                            <p className="text-white font-medium">{formatDuration(country.avgDuration)}</p>
-                                                            <p className="text-slate-400 text-sm">avg duration</p>
-                                                        </div>
-                                                        <div>
-                                                            <p className="text-white font-medium">{formatPercentage(country.bounceRate)}</p>
-                                                            <p className="text-slate-400 text-sm">bounce rate</p>
-                                                        </div>
+                                                        {/*<div>*/}
+                                                        {/*    <p className="text-white font-medium">{formatDuration(country.avgDuration)}</p>*/}
+                                                        {/*    <p className="text-slate-400 text-sm">avg duration</p>*/}
+                                                        {/*</div>*/}
+                                                        {/*<div>*/}
+                                                        {/*    <p className="text-white font-medium">{formatPercentage(country.bounceRate)}</p>*/}
+                                                        {/*    <p className="text-slate-400 text-sm">bounce rate</p>*/}
+                                                        {/*</div>*/}
                                                         <div className="flex items-center space-x-2">
                                                             {getTrendIcon(country.trend)}
                                                             <ChevronRight className={`w-4 h-4 text-slate-400 transition-transform ${
@@ -345,14 +192,14 @@ const Geography = () => {
                                                                 </div>
                                                             </div>
                                                             <div className="flex items-center space-x-4 text-right">
-                                                                <div>
-                                                                    <p className="text-white text-sm">{formatDuration(city.avgDuration)}</p>
-                                                                    <p className="text-slate-400 text-xs">duration</p>
-                                                                </div>
-                                                                <div>
-                                                                    <p className="text-white text-sm">{formatPercentage(city.bounceRate)}</p>
-                                                                    <p className="text-slate-400 text-xs">bounce</p>
-                                                                </div>
+                                                                {/*<div>*/}
+                                                                {/*    <p className="text-white text-sm">{formatDuration(city.avgDuration)}</p>*/}
+                                                                {/*    <p className="text-slate-400 text-xs">duration</p>*/}
+                                                                {/*</div>*/}
+                                                                {/*<div>*/}
+                                                                {/*    <p className="text-white text-sm">{formatPercentage(city.bounceRate)}</p>*/}
+                                                                {/*    <p className="text-slate-400 text-xs">bounce</p>*/}
+                                                                {/*</div>*/}
                                                             </div>
                                                         </div>
                                                     ))}
@@ -396,27 +243,27 @@ const Geography = () => {
                         </div>
 
                         {/* Insights */}
-                        <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/50 p-6">
-                            <div className="flex items-center space-x-2 mb-4">
-                                <Zap className="w-5 h-5 text-purple-400" />
-                                <h3 className="text-lg font-semibold text-white">Geographic Insights</h3>
-                            </div>
-                            <div className="space-y-4">
-                                {generateInsights().map((insight, index) => (
-                                    <div key={index} className="p-4 bg-slate-700/30 rounded-lg">
-                                        <div className="flex items-start space-x-3">
-                                            <div className="p-2 bg-slate-600/50 rounded-lg">
-                                                <insight.icon className={`w-4 h-4 ${insight.color}`} />
-                                            </div>
-                                            <div className="flex-1">
-                                                <h4 className="text-white font-medium text-sm mb-1">{insight.title}</h4>
-                                                <p className="text-slate-400 text-xs">{insight.description}</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
+                        {/*<div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/50 p-6">*/}
+                        {/*    <div className="flex items-center space-x-2 mb-4">*/}
+                        {/*        <Zap className="w-5 h-5 text-purple-400" />*/}
+                        {/*        <h3 className="text-lg font-semibold text-white">Geographic Insights</h3>*/}
+                        {/*    </div>*/}
+                        {/*    <div className="space-y-4">*/}
+                        {/*        /!*{generateInsights().map((insight, index) => (*!/*/}
+                        {/*        /!*    <div key={index} className="p-4 bg-slate-700/30 rounded-lg">*!/*/}
+                        {/*        /!*        <div className="flex items-start space-x-3">*!/*/}
+                        {/*        /!*            <div className="p-2 bg-slate-600/50 rounded-lg">*!/*/}
+                        {/*        /!*                <insight.icon className={`w-4 h-4 ${insight.color}`} />*!/*/}
+                        {/*        /!*            </div>*!/*/}
+                        {/*        /!*            <div className="flex-1">*!/*/}
+                        {/*        /!*                <h4 className="text-white font-medium text-sm mb-1">{insight.title}</h4>*!/*/}
+                        {/*        /!*                <p className="text-slate-400 text-xs">{insight.description}</p>*!/*/}
+                        {/*        /!*            </div>*!/*/}
+                        {/*        /!*        </div>*!/*/}
+                        {/*        /!*    </div>*!/*/}
+                        {/*        /!*))}*!/*/}
+                        {/*    </div>*/}
+                        {/*</div>*/}
 
                         {/* Quick Stats */}
                         <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/50 p-6">
@@ -435,7 +282,7 @@ const Geography = () => {
                                 <div className="flex justify-between">
                                     <span className="text-slate-400">Top Country Share</span>
                                     <span className="text-white font-medium">
-                                        {getCountryPercentage(geographyData[0].sessions)}%
+                                        {/*{getCountryPercentage(geographyData[0].sessions)}%*/}
                                     </span>
                                 </div>
                                 <div className="flex justify-between">

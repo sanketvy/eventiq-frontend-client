@@ -17,11 +17,26 @@ import {
     Timer,
     Percent
 } from "lucide-react";
+import axios from "axios";
+import {AnalyticsService} from "../utils/RestPaths.js";
+import {getToken} from "../KeycloakService.js";
 
-const DevicePage = () => {
+const DevicePage = ({selectedProject}) => {
     const [selectedBrowser, setSelectedBrowser] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
+    const [userAgentData, setUserAgentData] = useState([]);
 
+    useEffect(() => {
+        axios.post(AnalyticsService.device, {
+            projectId: selectedProject
+        }, {
+            headers:{
+                Authorization: `Bearer ${getToken()}`
+            }
+        }).then(res => {
+            setUserAgentData(res.data);
+        })
+    }, []);
     // Generate mock user agent data
     const generateUserAgentData = () => {
         const browsers = [
@@ -119,7 +134,6 @@ const DevicePage = () => {
         return browsers.sort((a, b) => b.sessions - a.sessions);
     };
 
-    const [userAgentData] = useState(generateUserAgentData());
 
     const totalSessions = userAgentData.reduce((sum, browser) => sum + browser.sessions, 0);
     const avgDuration = Math.round(userAgentData.reduce((sum, browser) => sum + browser.avgDuration, 0) / userAgentData.length);
@@ -171,57 +185,57 @@ const DevicePage = () => {
         browser.devices.some(device => device.name.toLowerCase().includes(searchTerm.toLowerCase()))
     );
 
-    const generateInsights = () => {
-        const insights = [];
-
-        // Top performing browser
-        const topBrowser = userAgentData[0];
-        insights.push({
-            type: 'positive',
-            icon: Target,
-            title: `${topBrowser.name} Dominates`,
-            description: `${topBrowser.name} accounts for ${getBrowserPercentage(topBrowser.sessions)}% of total sessions with ${topBrowser.sessions} sessions.`,
-            color: 'text-green-400'
-        });
-
-        // High engagement browser
-        const highEngagement = userAgentData.find(b => b.avgDuration > 280 && b.bounceRate < 0.32);
-        if (highEngagement) {
-            insights.push({
-                type: 'positive',
-                icon: Timer,
-                title: 'High Engagement Browser',
-                description: `${highEngagement.name} shows strong engagement with ${formatDuration(highEngagement.avgDuration)} avg duration and ${formatPercentage(highEngagement.bounceRate)} bounce rate.`,
-                color: 'text-blue-400'
-            });
-        }
-
-        // Conversion leader
-        const conversionLeader = userAgentData.reduce((max, browser) =>
-            browser.conversionRate > max.conversionRate ? browser : max
-        );
-        insights.push({
-            type: 'positive',
-            icon: CheckCircle,
-            title: 'Conversion Leader',
-            description: `${conversionLeader.name} leads in conversions with ${formatPercentage(conversionLeader.conversionRate)} conversion rate.`,
-            color: 'text-emerald-400'
-        });
-
-        // High bounce rate warning
-        const highBounce = userAgentData.find(b => b.bounceRate > 0.40);
-        if (highBounce) {
-            insights.push({
-                type: 'warning',
-                icon: AlertCircle,
-                title: 'High Bounce Rate Alert',
-                description: `${highBounce.name} has elevated bounce rate at ${formatPercentage(highBounce.bounceRate)}. Consider browser-specific optimizations.`,
-                color: 'text-yellow-400'
-            });
-        }
-
-        return insights;
-    };
+    // const generateInsights = () => {
+    //     const insights = [];
+    //
+    //     // Top performing browser
+    //     const topBrowser = userAgentData[0];
+    //     insights.push({
+    //         type: 'positive',
+    //         icon: Target,
+    //         title: `${topBrowser?.name} Dominates`,
+    //         description: `${topBrowser?.name} accounts for ${getBrowserPercentage(topBrowser?.sessions)}% of total sessions with ${topBrowser.sessions} sessions.`,
+    //         color: 'text-green-400'
+    //     });
+    //
+    //     // High engagement browser
+    //     const highEngagement = userAgentData.find(b => b.avgDuration > 280 && b.bounceRate < 0.32);
+    //     if (highEngagement) {
+    //         insights.push({
+    //             type: 'positive',
+    //             icon: Timer,
+    //             title: 'High Engagement Browser',
+    //             description: `${highEngagement.name} shows strong engagement with ${formatDuration(highEngagement.avgDuration)} avg duration and ${formatPercentage(highEngagement.bounceRate)} bounce rate.`,
+    //             color: 'text-blue-400'
+    //         });
+    //     }
+    //
+    //     // Conversion leader
+    //     const conversionLeader = userAgentData.reduce((max, browser) =>
+    //         browser.conversionRate > max.conversionRate ? browser : max
+    //     );
+    //     insights.push({
+    //         type: 'positive',
+    //         icon: CheckCircle,
+    //         title: 'Conversion Leader',
+    //         description: `${conversionLeader.name} leads in conversions with ${formatPercentage(conversionLeader.conversionRate)} conversion rate.`,
+    //         color: 'text-emerald-400'
+    //     });
+    //
+    //     // High bounce rate warning
+    //     const highBounce = userAgentData.find(b => b.bounceRate > 0.40);
+    //     if (highBounce) {
+    //         insights.push({
+    //             type: 'warning',
+    //             icon: AlertCircle,
+    //             title: 'High Bounce Rate Alert',
+    //             description: `${highBounce.name} has elevated bounce rate at ${formatPercentage(highBounce.bounceRate)}. Consider browser-specific optimizations.`,
+    //             color: 'text-yellow-400'
+    //         });
+    //     }
+    //
+    //     return insights;
+    // };
 
     return (
         <div className="min-h-screen text-white">
@@ -268,14 +282,14 @@ const DevicePage = () => {
                                                     </div>
                                                 </div>
                                                 <div className="flex items-center space-x-4 text-right">
-                                                    <div>
-                                                        <p className="text-white font-medium">{formatDuration(browser.avgDuration)}</p>
-                                                        <p className="text-slate-400 text-sm">avg duration</p>
-                                                    </div>
-                                                    <div>
-                                                        <p className="text-white font-medium">{formatPercentage(browser.bounceRate)}</p>
-                                                        <p className="text-slate-400 text-sm">bounce rate</p>
-                                                    </div>
+                                                    {/*<div>*/}
+                                                    {/*    <p className="text-white font-medium">{formatDuration(browser.avgDuration)}</p>*/}
+                                                    {/*    <p className="text-slate-400 text-sm">avg duration</p>*/}
+                                                    {/*</div>*/}
+                                                    {/*<div>*/}
+                                                    {/*    <p className="text-white font-medium">{formatPercentage(browser.bounceRate)}</p>*/}
+                                                    {/*    <p className="text-slate-400 text-sm">bounce rate</p>*/}
+                                                    {/*</div>*/}
                                                     <div className="flex items-center space-x-2">
                                                         {getTrendIcon(browser.trend)}
                                                         <ChevronRight className={`w-4 h-4 text-slate-400 transition-transform ${
@@ -312,14 +326,14 @@ const DevicePage = () => {
                                                             </div>
                                                         </div>
                                                         <div className="flex items-center space-x-4 text-right">
-                                                            <div>
-                                                                <p className="text-white text-sm">{formatDuration(device.avgDuration)}</p>
-                                                                <p className="text-slate-400 text-xs">duration</p>
-                                                            </div>
-                                                            <div>
-                                                                <p className="text-white text-sm">{formatPercentage(device.bounceRate)}</p>
-                                                                <p className="text-slate-400 text-xs">bounce</p>
-                                                            </div>
+                                                            {/*<div>*/}
+                                                            {/*    <p className="text-white text-sm">{formatDuration(device.avgDuration)}</p>*/}
+                                                            {/*    <p className="text-slate-400 text-xs">duration</p>*/}
+                                                            {/*</div>*/}
+                                                            {/*<div>*/}
+                                                            {/*    <p className="text-white text-sm">{formatPercentage(device.bounceRate)}</p>*/}
+                                                            {/*    <p className="text-slate-400 text-xs">bounce</p>*/}
+                                                            {/*</div>*/}
                                                         </div>
                                                     </div>
                                                 ))}
@@ -363,27 +377,27 @@ const DevicePage = () => {
                     </div>
 
                     {/* Insights */}
-                    <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/50 p-6">
-                        <div className="flex items-center space-x-2 mb-4">
-                            <Zap className="w-5 h-5 text-purple-400" />
-                            <h3 className="text-lg font-semibold text-white">Browser Insights</h3>
-                        </div>
-                        <div className="space-y-4">
-                            {generateInsights().map((insight, index) => (
-                                <div key={index} className="p-4 bg-slate-700/30 rounded-lg">
-                                    <div className="flex items-start space-x-3">
-                                        <div className="p-2 bg-slate-600/50 rounded-lg">
-                                            <insight.icon className={`w-4 h-4 ${insight.color}`} />
-                                        </div>
-                                        <div className="flex-1">
-                                            <h4 className="text-white font-medium text-sm mb-1">{insight.title}</h4>
-                                            <p className="text-slate-400 text-xs">{insight.description}</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
+                    {/*<div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/50 p-6">*/}
+                    {/*    <div className="flex items-center space-x-2 mb-4">*/}
+                    {/*        <Zap className="w-5 h-5 text-purple-400" />*/}
+                    {/*        <h3 className="text-lg font-semibold text-white">Browser Insights</h3>*/}
+                    {/*    </div>*/}
+                    {/*    <div className="space-y-4">*/}
+                    {/*        /!*{generateInsights().map((insight, index) => (*!/*/}
+                    {/*        /!*    <div key={index} className="p-4 bg-slate-700/30 rounded-lg">*!/*/}
+                    {/*        /!*        <div className="flex items-start space-x-3">*!/*/}
+                    {/*        /!*            <div className="p-2 bg-slate-600/50 rounded-lg">*!/*/}
+                    {/*        /!*                <insight.icon className={`w-4 h-4 ${insight.color}`} />*!/*/}
+                    {/*        /!*            </div>*!/*/}
+                    {/*        /!*            <div className="flex-1">*!/*/}
+                    {/*        /!*                <h4 className="text-white font-medium text-sm mb-1">{insight.title}</h4>*!/*/}
+                    {/*        /!*                <p className="text-slate-400 text-xs">{insight.description}</p>*!/*/}
+                    {/*        /!*            </div>*!/*/}
+                    {/*        /!*        </div>*!/*/}
+                    {/*        /!*    </div>*!/*/}
+                    {/*        /!*))}*!/*/}
+                    {/*    </div>*/}
+                    {/*</div>*/}
 
                     {/* Quick Stats */}
                     <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/50 p-6">
@@ -399,18 +413,18 @@ const DevicePage = () => {
                                     {userAgentData.reduce((sum, browser) => sum + browser.devices.length, 0)}
                                 </span>
                             </div>
-                            <div className="flex justify-between">
-                                <span className="text-slate-400">Top Browser Share</span>
-                                <span className="text-white font-medium">
-                                    {getBrowserPercentage(userAgentData[0].sessions)}%
-                                </span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span className="text-slate-400">Avg Conversion</span>
-                                <span className="text-white font-medium">
-                                    {formatPercentage(avgConversionRate)}
-                                </span>
-                            </div>
+                            {/*<div className="flex justify-between">*/}
+                            {/*    <span className="text-slate-400">Top Browser Share</span>*/}
+                            {/*    <span className="text-white font-medium">*/}
+                            {/*        {getBrowserPercentage(userAgentData[0].sessions)}%*/}
+                            {/*    </span>*/}
+                            {/*</div>*/}
+                            {/*<div className="flex justify-between">*/}
+                            {/*    <span className="text-slate-400">Avg Conversion</span>*/}
+                            {/*    <span className="text-white font-medium">*/}
+                            {/*        {formatPercentage(avgConversionRate)}*/}
+                            {/*    </span>*/}
+                            {/*</div>*/}
                         </div>
                     </div>
                 </div>

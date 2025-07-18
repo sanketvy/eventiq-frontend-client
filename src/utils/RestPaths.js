@@ -10,5 +10,8 @@ export const IdentityService = {
 }
 
 export const AnalyticsService = {
-    analytics: basePath + "/api/analytics/v1/session"
+    analytics: basePath + "/api/analytics/v1/session",
+    location: basePath + "/api/analytics/v1/location",
+    device: basePath + "/api/analytics/v1/device"
+
 }

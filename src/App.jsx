@@ -103,7 +103,7 @@ const App = () => {
                 )
             case 'geography':
                 return (
-                    <Geography selectedProject={selectedProject} />
+                    <Geography selectedProject={selectedProject} refresh={refresh} />
                 );
             case 'settings':
                 return (
