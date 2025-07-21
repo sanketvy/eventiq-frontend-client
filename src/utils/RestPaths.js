@@ -12,6 +12,11 @@ export const IdentityService = {
 export const AnalyticsService = {
     analytics: basePath + "/api/analytics/v1/session",
     location: basePath + "/api/analytics/v1/location",
-    device: basePath + "/api/analytics/v1/device"
+    device: basePath + "/api/analytics/v1/device",
+    dashboard: basePath + "/api/analytics/v1/dashboard"
+}
 
+export const MonitoringService = {
+    probes: basePath + "/api/monitoring/probe",
+    alert: basePath + "/api/monitoring/alert"
 }

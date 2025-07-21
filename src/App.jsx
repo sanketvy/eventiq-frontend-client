@@ -6,7 +6,7 @@ import {
 } from 'recharts';
 import {
     Home, Users, TrendingUp, Globe, Smartphone, Settings, Bell, Search, RefreshCcw,
-    ChevronLeft, ChevronRight, ChevronDown
+    ChevronLeft, ChevronRight, ChevronDown, MonitorCheck
 } from 'lucide-react';
 import OverviewPage from "./pages/OverviewPage.jsx";
 import Geography from "./pages/Geography.jsx";
@@ -18,6 +18,7 @@ import {getToken, logout} from "./KeycloakService.js";
 import {IdentityService} from "./utils/RestPaths.js";
 import axios from 'axios';
 import SessionsPage from "./pages/SessionsPage.jsx";
+import MonitoringDashboard from "./pages/MonitoringDashboard.jsx";
 
 
 const App = () => {
@@ -63,9 +64,9 @@ const App = () => {
     const sidebarItems = [
         { id: 'overview', icon: Home, label: 'Overview' },
         { id: 'session', icon: Users, label: 'Sessions' },
-        // { id: 'analytics', icon: TrendingUp, label: 'Analytics' },
         { id: 'geography', icon: Globe, label: 'Geography' },
         { id: 'devices', icon: Smartphone, label: 'Devices' },
+        { id: 'monitoring', icon: MonitorCheck, label: 'Monitoring' },
         { id: 'settings', icon: Settings, label: 'Settings' }
     ];
 
@@ -92,18 +93,18 @@ const App = () => {
                     <SessionsPage selectedProject={selectedProject} selectedTimeRange={selectedTimeRange} />
                 );
 
-            case 'analytics':
+            case 'monitoring':
                 return (
-                    <AnalyticsPage selectedProject={selectedProject} />
+                    <MonitoringDashboard selectedProject={selectedProject} refresh={refresh}  />
                 )
 
             case 'devices':
                 return (
-                    <DevicesPage selectedProject={selectedProject} selectedTimeRange={selectedTimeRange} />
+                    <DevicesPage selectedProject={selectedProject} selectedTimeRange={selectedTimeRange} refresh={refresh} />
                 )
             case 'geography':
                 return (
-                    <Geography selectedProject={selectedProject} refresh={refresh} />
+                    <Geography selectedProject={selectedProject} selectedTimeRange={selectedTimeRange} refresh={refresh} />
                 );
             case 'settings':
                 return (

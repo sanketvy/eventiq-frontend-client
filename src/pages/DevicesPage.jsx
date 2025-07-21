@@ -21,14 +21,15 @@ import axios from "axios";
 import {AnalyticsService} from "../utils/RestPaths.js";
 import {getToken} from "../KeycloakService.js";
 
-const DevicePage = ({selectedProject}) => {
+const DevicePage = ({selectedProject, selectedTimeRange, refresh}) => {
     const [selectedBrowser, setSelectedBrowser] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [userAgentData, setUserAgentData] = useState([]);
 
     useEffect(() => {
         axios.post(AnalyticsService.device, {
-            projectId: selectedProject
+            projectId: selectedProject,
+            timeframe: selectedTimeRange
         }, {
             headers:{
                 Authorization: `Bearer ${getToken()}`
@@ -36,7 +37,7 @@ const DevicePage = ({selectedProject}) => {
         }).then(res => {
             setUserAgentData(res.data);
         })
-    }, []);
+    }, [selectedProject, selectedTimeRange, refresh]);
     // Generate mock user agent data
     const generateUserAgentData = () => {
         const browsers = [

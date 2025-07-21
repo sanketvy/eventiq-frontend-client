@@ -24,7 +24,7 @@ import {AnalyticsService} from "../utils/RestPaths.js";
 import {getToken} from "../KeycloakService.js";
 import axios from "axios";
 
-const Geography = ({selectedProject, refresh}) => {
+const Geography = ({selectedProject,selectedTimeRange, refresh}) => {
     const [selectedTimeframe, setSelectedTimeframe] = useState('15m');
     const [selectedCountry, setSelectedCountry] = useState(null);
     const [currentTime, setCurrentTime] = useState(new Date());
@@ -34,7 +34,8 @@ const Geography = ({selectedProject, refresh}) => {
     // Update time every second
     useEffect(() => {
         axios.post(AnalyticsService.location, {
-            projectId: selectedProject
+            projectId: selectedProject,
+            timeframe: selectedTimeRange
         }, {
             headers: {
                 Authorization: `Bearer ${getToken()}`
@@ -43,7 +44,7 @@ const Geography = ({selectedProject, refresh}) => {
             console.log(res.data);
             setGeographyData(res.data);
         })
-    }, [refresh, selectedProject]);
+    }, [selectedProject, selectedTimeRange, refresh]);
 
     const totalSessions = geographyData.reduce((sum, country) => sum + country.sessions, 0);
     const avgDuration = Math.round(geographyData.reduce((sum, country) => sum + country.avgDuration, 0) / geographyData.length);
