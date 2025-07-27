@@ -29,12 +29,20 @@ const MonitoringDashboard = ({selectedProject, refresh}) => {
     const [alerts, setAlerts] = useState([]);
     const [loading, setLoading] = useState(false);
 
-    // Fetch monitors
     useEffect(() => {
-        if (selectedProject) {
+        if (!selectedProject) return;
+
+        // Initial call
+        fetchMonitors();
+
+        // Set interval
+        const intervalId = setInterval(() => {
             fetchMonitors();
-        }
-    }, [selectedProject, refresh]);
+        }, 30000); // 30000 ms = 30 seconds
+
+        // Cleanup function
+        return () => clearInterval(intervalId);
+    }, [selectedProject, refresh]); // re-run effect on project change or refresh trigger
 
     // Fetch alerts when alerts tab is active
     useEffect(() => {
@@ -50,6 +58,7 @@ const MonitoringDashboard = ({selectedProject, refresh}) => {
                     Authorization: `Bearer ${getToken()}`
                 }
             });
+            console.log(response.data);
             setMonitors(response.data);
         } catch (error) {
             console.error('Error fetching monitors:', error);
@@ -91,7 +100,7 @@ const MonitoringDashboard = ({selectedProject, refresh}) => {
 
     const getStatusColor = (status) => {
         switch (status) {
-            case 'online':
+            case 'UP':
                 return 'text-green-400';
             case 'warning':
                 return 'text-yellow-400';
@@ -234,7 +243,7 @@ const MonitoringDashboard = ({selectedProject, refresh}) => {
     };
 
     const MonitorCard = ({monitor}) => {
-        const StatusIcon = monitor.status === 'online' ? CheckCircle :
+        const StatusIcon = monitor.status === 'UP' ? CheckCircle :
             monitor.status === 'warning' ? AlertTriangle : XCircle;
         const TypeIcon = getTypeIcon(monitor.type);
         const monitorAlerts = getAlertsForMonitor(monitor.id);
@@ -257,7 +266,7 @@ const MonitoringDashboard = ({selectedProject, refresh}) => {
                             onClick={() => toggleMonitor(monitor.id)}
                             className="p-2 hover:bg-slate-700/50 rounded-lg transition-colors"
                         >
-                            {monitor.status === 'online' ?
+                            {monitor.status === 'UP' ?
                                 <Pause className="w-4 h-4 text-slate-400"/> :
                                 <Play className="w-4 h-4 text-green-400"/>
                             }
@@ -308,7 +317,7 @@ const MonitoringDashboard = ({selectedProject, refresh}) => {
                         <Clock className="w-4 h-4 text-slate-500"/>
                         <span className="text-slate-400">Every {monitor.checkInterval}s</span>
                     </div>
-                    <span className="text-slate-500">Last check: {monitor.lastCheck}</span>
+                    <span className="text-slate-500">Last check: {monitor.lastChecked ? monitor.lastChecked + "s" : "Not available"}</span>
                 </div>
             </div>
         );
